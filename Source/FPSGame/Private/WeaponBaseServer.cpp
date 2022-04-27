@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "FPSBaseCharacter.h"
 #include "WeaponBaseServer.h"
+#include "FPSBaseCharacter.h"
+
 
 
 // Sets default values
@@ -27,6 +28,7 @@ AWeaponBaseServer::AWeaponBaseServer()
 
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBaseServer::OnOtherBeginOverlap);
 
+	SetReplicates(true);
 }
 
 
@@ -42,9 +44,11 @@ void AWeaponBaseServer::OnOtherBeginOverlap(
 	AFPSBaseCharacter* FPSCharacter = Cast<AFPSBaseCharacter>(OtherActor);
 	if(FPSCharacter)
 	{
-		EquipWeapon();
-		//Íæ¼ÒÂß¼­
-		FPSCharacter->EquipPrimary(this);
+		if (!FPSCharacter->ExistServerPrimaryWeapon())
+		{
+			EquipWeapon();
+			FPSCharacter->EquipPrimary(this);
+		}
 	}
 }
 

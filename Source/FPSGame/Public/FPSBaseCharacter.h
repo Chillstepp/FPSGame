@@ -10,6 +10,7 @@
 
 class AWeaponBaseClient;
 class AWeaponBaseServer;
+
 UCLASS()
 class FPSGAME_API AFPSBaseCharacter : public ACharacter
 {
@@ -26,29 +27,42 @@ private:
 		UCameraComponent* PlayerCamera;
 	UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		USkeletalMeshComponent* FPSArmsMesh;
+
+	UAnimInstance* ClientArmsAnimBP;
 #pragma endregion Component
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
 #pragma region InputEvent
 	void MoveRight(float AxisValue);
 	void MoveForward(float AxisValue);
+
 	void JumpAction();
 	void StopJumpAction();
+
 	void LowSpeedWalkAction();
 	void NormalSpeedWalkAction();
+
+	void InputFirePressed();
+	void InputFireReleased();
 #pragma endregion InputEvent
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-
+#pragma region Fire
 public:
+	void FireWeaponPrimary();
+	void StopFirePrimary();
+#pragma endregion Fire
+
 #pragma region NetWorking
+public:
 	//服务器上执行，可靠传输(不会丢包/错码)，比如生成弹孔这种不重要的我们可以不用可靠传输
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerLowSpeedWalkAction();
@@ -64,19 +78,30 @@ public:
 	void ClientEquipFPArmsPrimary();
 	void ClientEquipFPArmsPrimary_Implementation();
 
+	UFUNCTION(Client, Reliable)
+	void ClientFire();
+	void ClientFire_Implementation();
 #pragma endregion NetWorking
-
-
 
 #pragma  region Weapon
 public:
 	void EquipPrimary(AWeaponBaseServer* WeaponBaseServer);
+	bool ExistServerPrimaryWeapon();
 private:
+	UPROPERTY(EditAnywhere)
+	EweaponType ActiveWeapon;
+
 	UPROPERTY(meta=(AllowPrivateAccess = "true"))
 	AWeaponBaseServer* ServerPrimaryWeapon;
 
 	UPROPERTY(meta = (AllowPrivateAccess = "true"))
 	AWeaponBaseClient* ClientPrimaryWeapon;
+
+	void StartWithKindOfWeapon();
+
+	void PurchaseWeapon(EweaponType WeaponType);
+
+	AWeaponBaseClient* GetCurrentClientFPArmsWeaponActor();
 
 #pragma  endregion Weapon
 };

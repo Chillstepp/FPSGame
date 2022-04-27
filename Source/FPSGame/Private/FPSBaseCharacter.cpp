@@ -33,15 +33,16 @@ AFPSBaseCharacter::AFPSBaseCharacter()
 	MyMesh->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 #pragma endregion Component
 
-
-
 }
-
+#pragma region EngineInitMethod
 // Called when the game starts or when spawned
 void AFPSBaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	StartWithKindOfWeapon();
+
+	ClientArmsAnimBP = FPSArmsMesh->GetAnimInstance();
 }
 
 
@@ -70,8 +71,33 @@ void AFPSBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	InputComponent->BindAction(TEXT("LowSpeedWalk"), EInputEvent::IE_Pressed, this, &AFPSBaseCharacter::LowSpeedWalkAction);
 	InputComponent->BindAction(TEXT("LowSpeedWalk"), EInputEvent::IE_Released, this, &AFPSBaseCharacter::NormalSpeedWalkAction);
 
+	InputComponent->BindAction(TEXT("Fire"), EInputEvent::IE_Pressed, this, &AFPSBaseCharacter::InputFirePressed);
+	InputComponent->BindAction(TEXT("Fire"), EInputEvent::IE_Released, this, &AFPSBaseCharacter::InputFireReleased);
+}
+#pragma endregion EngineInitMethod
+
+#pragma region Fire
+
+void AFPSBaseCharacter::FireWeaponPrimary()
+{
+	//服务端(减少弹药/射线检测(3种)/伤害应用/弹孔生成)
+	
+
+	//客户端(枪体播放动画/手臂播放动画/设计声音/屏幕抖动/后坐力/枪口闪光)
+	ClientFire();
+
+	//如果枪为连击需要连击系统开发
+	
+	//测试LOG
+	UE_LOG(LogTemp, Warning, TEXT("void AFPSBaseCharacter::FireWeaponPrimary()"));
 }
 
+void AFPSBaseCharacter::StopFirePrimary()
+{
+	
+}
+
+#pragma endregion Fire
 
 #pragma region InputEvent
 void AFPSBaseCharacter::MoveRight(float AxisValue)
@@ -102,6 +128,36 @@ void AFPSBaseCharacter::NormalSpeedWalkAction()
 	GetCharacterMovement()->MaxWalkSpeed = 600;
 	ServerNormalSpeedWalkAction();
 
+}
+void AFPSBaseCharacter::InputFirePressed()
+{
+	switch (ActiveWeapon)
+	{
+		case EweaponType::AK47:
+			{
+				FireWeaponPrimary();
+			}
+			break;
+		default:
+			{
+				
+			}
+	}
+}
+void AFPSBaseCharacter::InputFireReleased()
+{
+	switch (ActiveWeapon)
+	{
+		case EweaponType::AK47:
+			{
+				StopFirePrimary();
+			}
+			break;
+		default:
+			{
+				
+			}
+	}
 }
 #pragma endregion InputEvent
 
@@ -161,8 +217,20 @@ void AFPSBaseCharacter::ClientEquipFPArmsPrimary_Implementation()
 	}
 }
 
+void AFPSBaseCharacter::ClientFire_Implementation()
+{
+	//枪械开枪动画
+	AWeaponBaseClient* CurrentClientWeapon = GetCurrentClientFPArmsWeaponActor();
+	if (CurrentClientWeapon)
+	{
+		CurrentClientWeapon->PlayShootAnimation();
+	}
+	//FP手臂动画播放蒙太奇
+	UAnimMontage* ClientArmsFireMontage = CurrentClientWeapon->ClientArmsFireAnimMontage;
+	ClientArmsAnimBP->Montage_Play(ClientArmsFireMontage);
+	ClientArmsAnimBP->Montage_SetPlayRate(ClientArmsFireMontage, 1.5f);
+}
 #pragma endregion NetWorking
-
 
 #pragma  region Weapon
 void AFPSBaseCharacter::EquipPrimary(AWeaponBaseServer* WeaponBaseServer)
@@ -185,5 +253,71 @@ void AFPSBaseCharacter::EquipPrimary(AWeaponBaseServer* WeaponBaseServer)
 		);
 		ClientEquipFPArmsPrimary();
 	}
+}
+
+bool AFPSBaseCharacter::ExistServerPrimaryWeapon()
+{
+	if (ServerPrimaryWeapon)
+	{
+		return true;
+	}
+	return false;
+}
+
+
+void AFPSBaseCharacter::StartWithKindOfWeapon()
+{
+	//HasAuthority(): 判定当前是否运行在Authority（授权）服务器上
+	if(HasAuthority())
+	{
+		PurchaseWeapon(EweaponType::AK47);
+	}
+}
+void AFPSBaseCharacter::PurchaseWeapon(EweaponType WeaponType)
+{
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Owner = this;
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	switch (WeaponType)
+	{
+		case EweaponType::AK47:
+			{
+				UClass* BlueprintVar = StaticLoadClass(
+					AWeaponBaseServer::StaticClass(), 
+					nullptr, 
+					TEXT("Blueprint'/Game/Blueprint/Weapon/AK47/ServerBP_AK47.ServerBP_AK47_C'")
+				);
+				AWeaponBaseServer* ServerWeapon= GetWorld()->SpawnActor<AWeaponBaseServer>(
+					BlueprintVar,
+					GetActorTransform(),
+					SpawnInfo
+				);
+
+				/*
+				 *服务器spawn ServerWeapon时是忽略碰撞的，所以我们需要手动调用下装备武器的逻辑。
+				 *而对于客户端，我们首先要开启在WeaponBaseServer中开启SetReplicates(true)，这是为服务端有新枪的时候复制一把给客户端进行同步。
+				 *客户端的枪是不忽略碰撞的，因此在复制给客户端和人物撞击就触发了 客户端的碰撞逻辑从而得到客户端的枪。
+				 */
+				
+				ServerWeapon->EquipWeapon();
+				EquipPrimary(ServerWeapon);
+			}
+			break;
+		default:
+			{
+				
+			}
+	}
+}
+AWeaponBaseClient* AFPSBaseCharacter::GetCurrentClientFPArmsWeaponActor()
+{
+	switch (ActiveWeapon)
+	{
+		case EweaponType::AK47:
+			{
+				return ClientPrimaryWeapon;
+			}
+	}
+	return nullptr;
 }
 #pragma  endregion Weapon
