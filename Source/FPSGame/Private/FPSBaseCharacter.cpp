@@ -3,6 +3,7 @@
 
 #include "FPSBaseCharacter.h"
 
+#include "WeaponBaseClient.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -127,4 +128,62 @@ bool AFPSBaseCharacter::ServerNormalSpeedWalkAction_Validate()
 	return true;
 }
 
+void AFPSBaseCharacter::ClientEquipFPArmsPrimary_Implementation()
+{
+	if(ServerPrimaryWeapon)
+	{
+		if(ClientPrimaryWeapon)
+		{
+			
+		}
+		else
+		{
+			FActorSpawnParameters SpawnInfo;
+			SpawnInfo.Owner = this;
+			SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			ClientPrimaryWeapon = GetWorld()->SpawnActor<AWeaponBaseClient>(
+				ServerPrimaryWeapon->ClientWeaponBaseBPClass,
+				GetActorTransform(),
+				SpawnInfo);
+
+
+			ClientPrimaryWeapon->K2_AttachToComponent(
+				FPSArmsMesh,
+				TEXT("WeaponSocket"),
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				true
+			);
+
+			//改变手臂动画
+		}
+	}
+}
+
 #pragma endregion NetWorking
+
+
+#pragma  region Weapon
+void AFPSBaseCharacter::EquipPrimary(AWeaponBaseServer* WeaponBaseServer)
+{
+	if(ServerPrimaryWeapon)
+	{
+		
+	}
+	else
+	{
+		ServerPrimaryWeapon = WeaponBaseServer;
+		ServerPrimaryWeapon->SetOwner(this);
+		ServerPrimaryWeapon->K2_AttachToComponent(
+			GetMesh(), 
+			TEXT("Weapon_Rifle"), 
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			true
+		);
+		ClientEquipFPArmsPrimary();
+	}
+}
+#pragma  endregion Weapon

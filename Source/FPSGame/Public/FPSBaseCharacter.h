@@ -5,8 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include <Camera/CameraComponent.h>
+#include "WeaponBaseServer.h"
 #include "FPSBaseCharacter.generated.h"
 
+class AWeaponBaseClient;
+class AWeaponBaseServer;
 UCLASS()
 class FPSGAME_API AFPSBaseCharacter : public ACharacter
 {
@@ -57,6 +60,23 @@ public:
 	void ServerNormalSpeedWalkAction_Implementation();
 	bool ServerNormalSpeedWalkAction_Validate();
 
+	UFUNCTION(Client, Reliable)
+	void ClientEquipFPArmsPrimary();
+	void ClientEquipFPArmsPrimary_Implementation();
 
 #pragma endregion NetWorking
+
+
+
+#pragma  region Weapon
+public:
+	void EquipPrimary(AWeaponBaseServer* WeaponBaseServer);
+private:
+	UPROPERTY(meta=(AllowPrivateAccess = "true"))
+	AWeaponBaseServer* ServerPrimaryWeapon;
+
+	UPROPERTY(meta = (AllowPrivateAccess = "true"))
+	AWeaponBaseClient* ClientPrimaryWeapon;
+
+#pragma  endregion Weapon
 };
