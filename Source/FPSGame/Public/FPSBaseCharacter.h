@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include <Camera/CameraComponent.h>
 #include "WeaponBaseServer.h"
+#include "MultiFPSPlayerController.h"
 #include "FPSBaseCharacter.generated.h"
 
 class AWeaponBaseClient;
@@ -29,6 +30,9 @@ private:
 		USkeletalMeshComponent* FPSArmsMesh;
 
 	UAnimInstance* ClientArmsAnimBP;
+
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	AMultiFPSPlayerController* FPSPlayerController;
 #pragma endregion Component
 
 protected:

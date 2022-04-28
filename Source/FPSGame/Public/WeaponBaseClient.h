@@ -21,6 +21,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	UAnimMontage* ClientArmsFireAnimMontage;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* FireSound;
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* MuzzleFlash;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UCameraShakeBase> CameraShakeClass;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -32,4 +41,6 @@ public:
 	//蓝图去实现射击动画方法
 	UFUNCTION(BlueprintImplementableEvent, Category = "FPGunAnimation")
 	void PlayShootAnimation();
+
+	void DisplayWeaponEffect();
 };

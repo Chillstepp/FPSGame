@@ -43,6 +43,8 @@ void AFPSBaseCharacter::BeginPlay()
 	StartWithKindOfWeapon();
 
 	ClientArmsAnimBP = FPSArmsMesh->GetAnimInstance();
+
+	FPSPlayerController = Cast<AMultiFPSPlayerController>(GetController());
 }
 
 
@@ -219,16 +221,24 @@ void AFPSBaseCharacter::ClientEquipFPArmsPrimary_Implementation()
 
 void AFPSBaseCharacter::ClientFire_Implementation()
 {
-	//Ç¹Ðµ¿ªÇ¹¶¯»­
 	AWeaponBaseClient* CurrentClientWeapon = GetCurrentClientFPArmsWeaponActor();
 	if (CurrentClientWeapon)
 	{
+		//Ç¹Ðµ¿ªÇ¹¶¯»­
 		CurrentClientWeapon->PlayShootAnimation();
+
+		//FPÊÖ±Û¶¯»­²¥·ÅÃÉÌ«Ææ
+		UAnimMontage* ClientArmsFireMontage = CurrentClientWeapon->ClientArmsFireAnimMontage;
+		ClientArmsAnimBP->Montage_Play(ClientArmsFireMontage);
+		ClientArmsAnimBP->Montage_SetPlayRate(ClientArmsFireMontage, 1.5f);
+
+		//²¥·Å¿ªÇ¹ÉùÒô
+		CurrentClientWeapon->DisplayWeaponEffect();
+
+		//ÆÁÄ»¶¶¶¯
+		FPSPlayerController->PlayerCameraShake(CurrentClientWeapon->CameraShakeClass);
 	}
-	//FPÊÖ±Û¶¯»­²¥·ÅÃÉÌ«Ææ
-	UAnimMontage* ClientArmsFireMontage = CurrentClientWeapon->ClientArmsFireAnimMontage;
-	ClientArmsAnimBP->Montage_Play(ClientArmsFireMontage);
-	ClientArmsAnimBP->Montage_SetPlayRate(ClientArmsFireMontage, 1.5f);
+
 }
 #pragma endregion NetWorking
 

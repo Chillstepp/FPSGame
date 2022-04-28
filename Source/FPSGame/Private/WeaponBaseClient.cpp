@@ -2,6 +2,7 @@
 
 
 #include "WeaponBaseClient.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AWeaponBaseClient::AWeaponBaseClient()
@@ -27,5 +28,23 @@ void AWeaponBaseClient::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AWeaponBaseClient::DisplayWeaponEffect()
+{
+	//第一人称声音是一个2D声音，无需距离
+	UGameplayStatics::PlaySound2D(GetWorld(), FireSound);
+	UGameplayStatics::SpawnEmitterAttached(
+		MuzzleFlash,
+		WeaponMesh,
+		TEXT("Fire_FX_Slot"),
+		FVector::ZeroVector,
+		FRotator::ZeroRotator,
+		FVector::OneVector,
+		EAttachLocation::KeepRelativeOffset,
+		true,
+		EPSCPoolMethod::AutoRelease,
+		true
+	);
 }
 
