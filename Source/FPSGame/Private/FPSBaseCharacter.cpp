@@ -2,7 +2,7 @@
 
 
 #include "FPSBaseCharacter.h"
-
+#include "Kismet/KismetMathLibrary.h"
 #include "WeaponBaseClient.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -110,6 +110,57 @@ void AFPSBaseCharacter::FireWeaponPrimary()
 void AFPSBaseCharacter::StopFirePrimary()
 {
 	
+}
+
+//
+void AFPSBaseCharacter::RifleLineTrace(FVector CameraLocation, FRotator CameraRotation, bool IsMoving)
+{
+	//结束位置
+	FVector EndLocation;
+	//方向单位向量
+	const FVector CameraForwardVector = UKismetMathLibrary::GetForwardVector(CameraRotation);
+	//忽略的物体
+	TArray<AActor*>IgnoreArray;
+	IgnoreArray.Add(this);
+	//存储碰撞的结果信息
+	FHitResult HitResult;
+
+	
+	if(ServerPrimaryWeapon)
+	{
+		//是否移动会导致Endlocation计算
+		if (IsMoving)
+		{
+
+		}
+		else
+		{
+			EndLocation = CameraLocation + CameraForwardVector * ServerPrimaryWeapon->BulletDistance;
+		}
+	}
+	bool HitSuccess = UKismetSystemLibrary::LineTraceSingle(
+		GetWorld(), 
+		CameraLocation, 
+		EndLocation, 
+		ETraceTypeQuery::TraceTypeQuery1, 
+		false,
+		IgnoreArray,
+		EDrawDebugTrace::Persistent,
+		HitResult,
+		true,
+		FLinearColor::Red,
+		FLinearColor::Green,
+		3.0f  //和EDrawDebugTrace::有关，当选了持续时间则有用，如果选择一直Persistent则不会有用
+	);
+
+	if(HitSuccess)
+	{
+		UKismetSystemLibrary::PrintString(GetWorld(), FString::Printf(TEXT("HitActorName:%s"), *HitResult.Actor->GetName()));
+		//1.打到玩家，应用伤害
+
+		//2.打到墙壁，生成弹孔
+
+	}
 }
 
 #pragma endregion Fire
@@ -280,8 +331,8 @@ void AFPSBaseCharacter::ServerFireRifleWeapon_Implementation(FVector CameraLocat
 		//多播(播放身体动画蒙太奇)
 		MultiShooting();
 	}
-
-	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ServerPrimaryWeapon->ClipCurrentAmmo:%d"), ServerPrimaryWeapon->ClipCurrentAmmo));
+	RifleLineTrace(CameraLocation, CameraRotation, IsMoving);
+	//UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ServerPrimaryWeapon->ClipCurrentAmmo:%d"), ServerPrimaryWeapon->ClipCurrentAmmo));
 
 }
 

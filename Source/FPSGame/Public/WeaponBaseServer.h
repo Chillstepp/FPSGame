@@ -73,10 +73,16 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "FPGunAnimation")
 	void PlayShootAnimation();
 
+	//¶à²¥£ºÉä»÷Ð§¹û
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MultiShootingEffect();
 	void MultiShootingEffect_Implementation();
 	bool MultiShootingEffect_Validate();
+
+	//Éä»÷¾àÀë
+	UPROPERTY(EditAnywhere)
+	float BulletDistance;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

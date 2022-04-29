@@ -67,6 +67,8 @@ public:
 public:
 	void FireWeaponPrimary();
 	void StopFirePrimary();
+	void RifleLineTrace(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
+
 #pragma endregion Fire
 
 #pragma region NetWorking
