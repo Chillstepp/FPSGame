@@ -29,8 +29,11 @@ private:
 	UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		USkeletalMeshComponent* FPSArmsMesh;
 
+	UPROPERTY(Category = Character, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UAnimInstance* ClientArmsAnimBP;
 
+	UPROPERTY(Category = Character, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UAnimInstance* ServerBodyAnimBP;
 
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	AMultiFPSPlayerController* FPSPlayerController;
@@ -96,6 +99,10 @@ public:
 	void ClientUpdateAmmoUI(int32 ClipCurrentAmmo, int32 GunCurrentAmmo);
 	void ClientUpdateAmmoUI_Implementation(int32 ClipCurrentAmmo, int32 GunCurrentAmmo);
 
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void MultiShooting();
+	void MultiShooting_Implementation();
+	bool MultiShooting_Validate();
 
 
 #pragma endregion NetWorking
@@ -119,6 +126,7 @@ private:
 	void PurchaseWeapon(EweaponType WeaponType);
 
 	AWeaponBaseClient* GetCurrentClientFPArmsWeaponActor();
+
 
 #pragma  endregion Weapon
 };

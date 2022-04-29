@@ -31,7 +31,7 @@ public:
 	EweaponType KindOfWeapon;
 
 	//骨骼网格体组件: 武器
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* WeaponMesh;
 
 	//碰撞体
@@ -65,6 +65,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 MaxClipAmmo;
 
+	//开枪动画蒙太奇：人物手臂动作
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* ServerTPBodysShootAnimMontage;
+
+	//开枪栓动：枪械动画， 蓝图中实现
+	UFUNCTION(BlueprintImplementableEvent, Category = "FPGunAnimation")
+	void PlayShootAnimation();
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MultiShootingEffect();

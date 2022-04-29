@@ -44,6 +44,8 @@ void AFPSBaseCharacter::BeginPlay()
 
 	ClientArmsAnimBP = FPSArmsMesh->GetAnimInstance();
 
+	ServerBodyAnimBP = GetMesh()->GetAnimInstance();
+
 	FPSPlayerController = Cast<AMultiFPSPlayerController>(GetController());
 
 	if(FPSPlayerController)
@@ -237,10 +239,10 @@ void AFPSBaseCharacter::ClientFire_Implementation()
 	AWeaponBaseClient* CurrentClientWeapon = GetCurrentClientFPArmsWeaponActor();
 	if (CurrentClientWeapon)
 	{
-		//枪械开枪动画
+		//枪械开枪动画：枪械栓动
 		CurrentClientWeapon->PlayShootAnimation();
 
-		//FP手臂动画播放蒙太奇
+		//FP手臂动画播放蒙太奇： 手臂动作
 		UAnimMontage* ClientArmsFireMontage = CurrentClientWeapon->ClientArmsFireAnimMontage;
 		ClientArmsAnimBP->Montage_Play(ClientArmsFireMontage);
 		ClientArmsAnimBP->Montage_SetPlayRate(ClientArmsFireMontage, 1.5f);
@@ -265,17 +267,43 @@ void AFPSBaseCharacter::ClientUpdateAmmoUI_Implementation(int32 ClipCurrentAmmo,
 	}
 }
 
+
 void AFPSBaseCharacter::ServerFireRifleWeapon_Implementation(FVector CameraLocation, FRotator CameraRotation, bool IsMoving)
 {
-	//多播(必须在服务器调用，谁调用谁多播)
-	ServerPrimaryWeapon->MultiShootingEffect();
-	ServerPrimaryWeapon->ClipCurrentAmmo -= 1;
-	ClientUpdateAmmoUI(ServerPrimaryWeapon->ClipCurrentAmmo, ServerPrimaryWeapon->GunCurrentAmmo);
-	
+	if(ServerPrimaryWeapon)
+	{
+		//多播(必须在服务器调用，谁调用谁多播)
+		ServerPrimaryWeapon->MultiShootingEffect();
+		ServerPrimaryWeapon->ClipCurrentAmmo -= 1;
+		ClientUpdateAmmoUI(ServerPrimaryWeapon->ClipCurrentAmmo, ServerPrimaryWeapon->GunCurrentAmmo);
+
+		//多播(播放身体动画蒙太奇)
+		MultiShooting();
+	}
+
 	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ServerPrimaryWeapon->ClipCurrentAmmo:%d"), ServerPrimaryWeapon->ClipCurrentAmmo));
+
 }
 
 bool AFPSBaseCharacter::ServerFireRifleWeapon_Validate(FVector CameraLocation, FRotator CameraRotation, bool IsMoving)
+{
+	return true;
+}
+
+void AFPSBaseCharacter::MultiShooting_Implementation()
+{
+	if(ServerBodyAnimBP)
+	{
+		if(ServerPrimaryWeapon)
+		{
+			//枪械开枪动画：枪械栓动
+			ServerPrimaryWeapon->PlayShootAnimation();
+			//枪械开枪蒙太奇：人物手臂动作
+			ServerBodyAnimBP->Montage_Play(ServerPrimaryWeapon->ServerTPBodysShootAnimMontage);
+		}
+	}
+}
+bool AFPSBaseCharacter::MultiShooting_Validate()
 {
 	return true;
 }
