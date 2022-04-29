@@ -16,4 +16,10 @@ class FPSGAME_API AMultiFPSPlayerController : public APlayerController
 
 public:
 	void PlayerCameraShake(TSubclassOf<UCameraShakeBase>CameraShake);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "PlayerUI")
+	void CreatePlayerUI();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "PlayerUI")
+	void DoCrosshairRecoil();
 };

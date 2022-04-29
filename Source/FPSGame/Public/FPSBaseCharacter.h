@@ -85,6 +85,12 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientFire();
 	void ClientFire_Implementation();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFireRifleWeapon(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
+	void ServerFireRifleWeapon_Implementation(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
+	bool ServerFireRifleWeapon_Validate(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
+
 #pragma endregion NetWorking
 
 #pragma  region Weapon

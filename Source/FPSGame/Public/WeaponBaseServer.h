@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "WeaponBaseClient.h"
+#include "Kismet/GameplayStatics.h"
 #include "WeaponBaseServer.generated.h"
 
 
@@ -45,6 +46,14 @@ public:
 
 	UFUNCTION()
 	void EquipWeapon();
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* MuzzleFlash;
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void MultiShootingEffect();
+	void MultiShootingEffect_Implementation();
+	bool MultiShootingEffect_Validate();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

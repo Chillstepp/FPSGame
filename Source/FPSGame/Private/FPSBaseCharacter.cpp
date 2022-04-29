@@ -45,6 +45,11 @@ void AFPSBaseCharacter::BeginPlay()
 	ClientArmsAnimBP = FPSArmsMesh->GetAnimInstance();
 
 	FPSPlayerController = Cast<AMultiFPSPlayerController>(GetController());
+
+	if(FPSPlayerController)
+	{
+		FPSPlayerController->CreatePlayerUI();
+	}
 }
 
 
@@ -82,10 +87,10 @@ void AFPSBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AFPSBaseCharacter::FireWeaponPrimary()
 {
-	//服务端(减少弹药/射线检测(3种)/伤害应用/弹孔生成)
-	
+	//服务端(减少弹药/射线检测(沙鹰/三种步枪/狙击枪)/伤害应用/弹孔生成)
+	ServerFireRifleWeapon(PlayerCamera->GetComponentLocation(), PlayerCamera->GetComponentRotation(), false);
 
-	//客户端(枪体播放动画/手臂播放动画/设计声音/屏幕抖动/后坐力/枪口闪光)
+	//客户端(枪体播放动画/手臂播放动画/设计声音/屏幕抖动/十字线瞄准UI/后坐力/枪口闪光)
 	ClientFire();
 
 	//如果枪为连击需要连击系统开发
@@ -237,8 +242,21 @@ void AFPSBaseCharacter::ClientFire_Implementation()
 
 		//屏幕抖动
 		FPSPlayerController->PlayerCameraShake(CurrentClientWeapon->CameraShakeClass);
+
+		//十字瞄准UI开枪时扩散
+		FPSPlayerController->DoCrosshairRecoil();
 	}
 
+}
+void AFPSBaseCharacter::ServerFireRifleWeapon_Implementation(FVector CameraLocation, FRotator CameraRotation, bool IsMoving)
+{
+	//多播(必须在服务器调用，谁调用谁多播)
+	ServerPrimaryWeapon->MultiShootingEffect();
+}
+
+bool AFPSBaseCharacter::ServerFireRifleWeapon_Validate(FVector CameraLocation, FRotator CameraRotation, bool IsMoving)
+{
+	return true;
 }
 #pragma endregion NetWorking
 
