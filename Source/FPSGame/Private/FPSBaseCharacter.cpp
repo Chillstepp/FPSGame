@@ -4,6 +4,7 @@
 #include "FPSBaseCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "WeaponBaseClient.h"
+#include "Components/DecalComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -145,7 +146,7 @@ void AFPSBaseCharacter::RifleLineTrace(FVector CameraLocation, FRotator CameraRo
 		ETraceTypeQuery::TraceTypeQuery1, 
 		false,
 		IgnoreArray,
-		EDrawDebugTrace::Persistent,
+		EDrawDebugTrace::None,//射线debug线
 		HitResult,
 		true,
 		FLinearColor::Red,
@@ -155,10 +156,27 @@ void AFPSBaseCharacter::RifleLineTrace(FVector CameraLocation, FRotator CameraRo
 
 	if(HitSuccess)
 	{
+		//LOG:输出打中物体名称
 		UKismetSystemLibrary::PrintString(GetWorld(), FString::Printf(TEXT("HitActorName:%s"), *HitResult.Actor->GetName()));
-		//1.打到玩家，应用伤害
 
-		//2.打到墙壁，生成弹孔
+		AFPSBaseCharacter* CanCastToFPSCharacter = Cast<AFPSBaseCharacter>(HitResult.Actor);
+		if(CanCastToFPSCharacter)
+		{
+			//1.打到玩家，应用伤害
+		}
+		else
+		{
+			//2.打到墙壁，生成弹孔
+
+			/*
+			 * MakeRotFromX(FVector X)方法：
+			 * 假设目前X轴向量为（1，0，0），现在要使它变成输入的新向量X，该函数计算的就是使当前坐标系的X轴旋转到新X轴的Rotator。
+			 */
+			//HitResult.Normal为法相
+			FRotator XRotator = UKismetMathLibrary::MakeRotFromX(HitResult.Normal);
+			MultiSpawnBulletDecal(HitResult.Location, XRotator);
+		}
+		
 
 	}
 }
@@ -355,6 +373,30 @@ void AFPSBaseCharacter::MultiShooting_Implementation()
 	}
 }
 bool AFPSBaseCharacter::MultiShooting_Validate()
+{
+	return true;
+}
+
+void AFPSBaseCharacter::MultiSpawnBulletDecal_Implementation(FVector Location, FRotator Rotation)
+{
+	if(ServerPrimaryWeapon)
+	{
+		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(
+			GetWorld(),
+			ServerPrimaryWeapon->BulletDecalMaterial,
+			FVector(8.0f, 8.0f, 8.0f),
+			Location,
+			Rotation,
+			10.0f
+		);
+		if(Decal)
+		{
+			Decal->SetFadeScreenSize(0.001f);
+		}
+	}
+	
+}
+bool AFPSBaseCharacter::MultiSpawnBulletDecal_Validate(FVector Location, FRotator Rotation)
 {
 	return true;
 }

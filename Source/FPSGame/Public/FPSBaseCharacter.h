@@ -106,6 +106,11 @@ public:
 	void MultiShooting_Implementation();
 	bool MultiShooting_Validate();
 
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	void MultiSpawnBulletDecal(FVector Location, FRotator Rotation);
+	void MultiSpawnBulletDecal_Implementation(FVector Location, FRotator Rotation);
+	bool MultiSpawnBulletDecal_Validate(FVector Location, FRotator Rotation);
+
 
 #pragma endregion NetWorking
 
