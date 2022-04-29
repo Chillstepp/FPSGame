@@ -31,6 +31,7 @@ private:
 
 	UAnimInstance* ClientArmsAnimBP;
 
+
 	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	AMultiFPSPlayerController* FPSPlayerController;
 #pragma endregion Component
@@ -78,6 +79,11 @@ public:
 	void ServerNormalSpeedWalkAction_Implementation();
 	bool ServerNormalSpeedWalkAction_Validate();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFireRifleWeapon(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
+	void ServerFireRifleWeapon_Implementation(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
+	bool ServerFireRifleWeapon_Validate(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
+
 	UFUNCTION(Client, Reliable)
 	void ClientEquipFPArmsPrimary();
 	void ClientEquipFPArmsPrimary_Implementation();
@@ -86,10 +92,11 @@ public:
 	void ClientFire();
 	void ClientFire_Implementation();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerFireRifleWeapon(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
-	void ServerFireRifleWeapon_Implementation(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
-	bool ServerFireRifleWeapon_Validate(FVector CameraLocation, FRotator CameraRotation, bool IsMoving);
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmoUI(int32 ClipCurrentAmmo, int32 GunCurrentAmmo);
+	void ClientUpdateAmmoUI_Implementation(int32 ClipCurrentAmmo, int32 GunCurrentAmmo);
+
+
 
 #pragma endregion NetWorking
 

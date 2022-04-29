@@ -50,6 +50,22 @@ public:
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* MuzzleFlash;
 
+	UPROPERTY(EditAnywhere)
+	USoundBase* FireSound;
+
+	//枪体现在剩余子弹
+	UPROPERTY(EditAnywhere)
+	int32 GunCurrentAmmo;
+
+	//弹夹现在剩余子弹,Replicated如果服务器改变，那么客户端也要改变
+	UPROPERTY(EditAnywhere, Replicated)
+	int32 ClipCurrentAmmo;
+
+	//弹夹容量
+	UPROPERTY(EditAnywhere)
+	int32 MaxClipAmmo;
+
+
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 	void MultiShootingEffect();
 	void MultiShootingEffect_Implementation();
@@ -63,3 +79,4 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 };
+

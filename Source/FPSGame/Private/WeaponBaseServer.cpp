@@ -2,6 +2,7 @@
 
 
 #include "WeaponBaseServer.h"
+#include "Net/UnrealNetwork.h"
 #include "FPSBaseCharacter.h"
 
 
@@ -90,10 +91,23 @@ void AWeaponBaseServer::MultiShootingEffect_Implementation()
 			EPSCPoolMethod::AutoRelease,
 			true
 		);
+
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			FireSound,
+			GetActorLocation(),
+			GetActorRotation()
+		);
 	}
+
 }
 
 bool AWeaponBaseServer::MultiShootingEffect_Validate()
 {
 	return true;
+}
+
+void AWeaponBaseServer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	DOREPLIFETIME_CONDITION(AWeaponBaseServer, ClipCurrentAmmo, COND_None);
 }

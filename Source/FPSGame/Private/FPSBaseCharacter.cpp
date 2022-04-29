@@ -87,12 +87,18 @@ void AFPSBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void AFPSBaseCharacter::FireWeaponPrimary()
 {
-	//服务端(减少弹药/射线检测(沙鹰/三种步枪/狙击枪)/伤害应用/弹孔生成)
-	ServerFireRifleWeapon(PlayerCamera->GetComponentLocation(), PlayerCamera->GetComponentRotation(), false);
+	//子弹是否足够
+	if(ServerPrimaryWeapon->ClipCurrentAmmo > 0)
+	{
+		//服务端(减少弹药/射线检测(沙鹰/三种步枪/狙击枪)/伤害应用/弹孔生成)
+		ServerFireRifleWeapon(PlayerCamera->GetComponentLocation(), PlayerCamera->GetComponentRotation(), false);
 
-	//客户端(枪体播放动画/手臂播放动画/设计声音/屏幕抖动/十字线瞄准UI/后坐力/枪口闪光)
-	ClientFire();
+		//客户端(枪体播放动画/手臂播放动画/设计声音/屏幕抖动/十字线瞄准UI/后坐力/枪口闪光)
+		ClientFire();
 
+		UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ServerPrimaryWeapon->ClipCurrentAmmo:%d"), ServerPrimaryWeapon->ClipCurrentAmmo));
+
+	}
 	//如果枪为连击需要连击系统开发
 	
 	//测试LOG
@@ -219,6 +225,8 @@ void AFPSBaseCharacter::ClientEquipFPArmsPrimary_Implementation()
 				true
 			);
 
+			//拿到枪就更新枪的子弹信息
+			ClientUpdateAmmoUI(ServerPrimaryWeapon->ClipCurrentAmmo, ServerPrimaryWeapon->GunCurrentAmmo);
 			//改变手臂动画
 		}
 	}
@@ -248,10 +256,23 @@ void AFPSBaseCharacter::ClientFire_Implementation()
 	}
 
 }
+
+void AFPSBaseCharacter::ClientUpdateAmmoUI_Implementation(int32 ClipCurrentAmmo, int32 GunCurrentAmmo)
+{
+	if(FPSPlayerController)
+	{
+		FPSPlayerController->UpdateAmmoUI(ClipCurrentAmmo, GunCurrentAmmo);
+	}
+}
+
 void AFPSBaseCharacter::ServerFireRifleWeapon_Implementation(FVector CameraLocation, FRotator CameraRotation, bool IsMoving)
 {
 	//多播(必须在服务器调用，谁调用谁多播)
 	ServerPrimaryWeapon->MultiShootingEffect();
+	ServerPrimaryWeapon->ClipCurrentAmmo -= 1;
+	ClientUpdateAmmoUI(ServerPrimaryWeapon->ClipCurrentAmmo, ServerPrimaryWeapon->GunCurrentAmmo);
+	
+	UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("ServerPrimaryWeapon->ClipCurrentAmmo:%d"), ServerPrimaryWeapon->ClipCurrentAmmo));
 }
 
 bool AFPSBaseCharacter::ServerFireRifleWeapon_Validate(FVector CameraLocation, FRotator CameraRotation, bool IsMoving)
@@ -292,7 +313,7 @@ bool AFPSBaseCharacter::ExistServerPrimaryWeapon()
 	return false;
 }
 
-
+//初始化持有枪械
 void AFPSBaseCharacter::StartWithKindOfWeapon()
 {
 	//HasAuthority(): 判定当前是否运行在Authority（授权）服务器上

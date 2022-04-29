@@ -22,4 +22,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "PlayerUI")
 	void DoCrosshairRecoil();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "PlayerUI")
+	void UpdateAmmoUI(int32 ClipCurrentAmmo, int32 GunCurrentAmmo);
 };
