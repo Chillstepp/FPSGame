@@ -4,8 +4,7 @@
 
 
 
-[![LLbbVJ.jpg](https://s1.ax1x.com/2022/04/28/LLbbVJ.jpg)](https://imgtu.com/i/LLbbVJ)
-
+![image-20220728122059196](https://raw.githubusercontent.com/Chillstepp/MyPicBed/master/master/image-20220728122059196.png)
 
 
 目前开发的是基本功能，后续开发/补充功能：
